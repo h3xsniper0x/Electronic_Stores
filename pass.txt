@@ -1,0 +1,6 @@
+امر تنشيط السرفر من cmd       هو    /d:/project/venv_fixed/Scripts/Activate   .
+
+اسم المدير او الادمن  waeel   كلمة المرور admin123
+
+
+

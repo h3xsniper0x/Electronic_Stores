@@ -1,0 +1,298 @@
+{% extends 'base.html' %}
+
+{% block title %}تأكيد الطلب #{{ order.pk }} - المتجر الإلكتروني{% endblock %}
+
+{% block content %}
+<div class="order-detail-page">
+    <div class="success-header">
+        <div class="success-icon">✓</div>
+        <h1>تم إنشاء طلبك بنجاح!</h1>
+        <p>شكراً لك على طلبك. سنقوم بمعالجته في أقرب وقت ممكن.</p>
+    </div>
+
+    <div class="order-card">
+        <div class="order-header">
+            <div class="order-number">
+                <span class="label">رقم الطلب:</span>
+                <span class="value">#{{ order.pk }}</span>
+            </div>
+            <div class="order-status status-{{ order.status }}">
+                {{ order.get_status_display }}
+            </div>
+        </div>
+
+        <div class="order-sections">
+            <div class="order-info">
+                <h3>معلومات التوصيل</h3>
+                <div class="info-item">
+                    <span class="info-label">الاسم:</span>
+                    <span>{{ order.full_name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">العنوان:</span>
+                    <span>{{ order.address }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">الهاتف:</span>
+                    <span dir="ltr">{{ order.phone }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">تاريخ الطلب:</span>
+                    <span>{{ order.created_at|date:"Y/m/d - H:i" }}</span>
+                </div>
+            </div>
+
+            <div class="order-items-section">
+                <h3>المنتجات المطلوبة</h3>
+                <div class="order-items">
+                    {% for item in order.items.all %}
+                    <div class="order-item">
+                        <div class="item-image">
+                            {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                            {% else %}
+                            <div class="placeholder-image">📦</div>
+                            {% endif %}
+                        </div>
+                        <div class="item-details">
+                            <h4>{{ item.product.name }}</h4>
+                            <span class="item-price">{{ item.price }} ر.س × {{ item.quantity }}</span>
+                        </div>
+                        <div class="item-total">{{ item.total_price }} ر.س</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="order-total">
+            <span>الإجمالي:</span>
+            <span class="total-value">{{ order.total_price }} ر.س</span>
+        </div>
+    </div>
+
+    <div class="order-actions">
+        {% if order.status == 'pending' %}
+        <a href="{% url 'orders:cancel_order' order.id %}" class="btn btn-danger">🗑️ إلغاء الطلب</a>
+        {% endif %}
+        <a href="{% url 'orders:order_list' %}" class="btn btn-outline">📋 جميع طلباتي</a>
+        <a href="{% url 'core:product_list' %}" class="btn btn-primary">🛍️ متابعة التسوق</a>
+    </div>
+</div>
+
+<style>
+    .order-detail-page {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .success-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .success-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #51cf66, #40c057);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1rem;
+        color: #fff;
+    }
+
+    .success-header h1 {
+        font-size: 1.8rem;
+        color: #51cf66;
+        margin-bottom: 0.5rem;
+    }
+
+    .success-header p {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .order-card {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 1.5rem;
+    }
+
+    .order-number .label {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .order-number .value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e94560;
+        margin-right: 0.5rem;
+    }
+
+    .order-status {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .status-pending {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+    }
+
+    .status-processing {
+        background: rgba(23, 162, 184, 0.2);
+        color: #17a2b8;
+    }
+
+    .status-shipped {
+        background: rgba(0, 123, 255, 0.2);
+        color: #007bff;
+    }
+
+    .status-delivered {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+
+    .status-cancelled {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+    }
+
+    .order-sections {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .order-info h3,
+    .order-items-section h3 {
+        font-size: 1rem;
+        color: #e94560;
+        margin-bottom: 1rem;
+    }
+
+    .info-item {
+        padding: 0.5rem 0;
+    }
+
+    .info-label {
+        color: rgba(255, 255, 255, 0.6);
+        margin-left: 0.5rem;
+    }
+
+    .order-items {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .order-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+    }
+
+    .item-image {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .placeholder-image {
+        font-size: 1.5rem;
+        opacity: 0.5;
+    }
+
+    .item-details {
+        flex: 1;
+    }
+
+    .item-details h4 {
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .item-price {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .item-total {
+        font-weight: 600;
+        color: #51cf66;
+    }
+
+    .order-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 1.3rem;
+    }
+
+    .total-value {
+        font-weight: 700;
+        color: #51cf66;
+    }
+
+    .order-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: #fff;
+    }
+
+    .btn-outline:hover {
+        border-color: #e94560;
+        color: #e94560;
+    }
+
+    @media (max-width: 768px) {
+        .order-sections {
+            grid-template-columns: 1fr;
+        }
+
+        .order-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,346 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - المتجر الإلكتروني{% endblock %}
+
+{% block content %}
+<div class="product-detail-page">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">الرئيسية</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:product_list' %}">المنتجات</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:product_list' %}?category={{ product.category.id }}">{{
+                    product.category.name }}</a></li>
+            <li class="breadcrumb-item active">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Product Details -->
+    <div class="row g-4">
+        <!-- Product Image -->
+        <div class="col-lg-6">
+            <div class="card product-gallery">
+                <div class="main-image">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid">
+                    {% else %}
+                    <div class="placeholder-image">📦</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="col-lg-6">
+            <div class="product-info">
+                <span class="category-badge">{{ product.category.name }}</span>
+                <h1 class="product-title">{{ product.name }}</h1>
+
+                <div class="price-section mb-3">
+                    <span class="current-price">{{ product.price }} ر.س</span>
+                </div>
+
+                <!-- Stock Status -->
+                <div class="stock-status mb-3">
+                    {% if product.stock > 0 %}
+                    <span class="badge bg-success fs-6">✓ متوفر في المخزون ({{ product.stock }} قطعة)</span>
+                    {% else %}
+                    <span class="badge bg-danger fs-6">✗ غير متوفر حالياً</span>
+                    {% endif %}
+                </div>
+
+                <!-- Description -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">وصف المنتج</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">{{ product.description }}</p>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex gap-3 mb-4">
+                    {% if product.stock > 0 %}
+                    <form method="post" action="{% url 'orders:add_to_cart' product.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            🛒 أضف إلى السلة
+                        </button>
+                    </form>
+                    {% else %}
+                    <button class="btn btn-secondary btn-lg" disabled>
+                        غير متوفر
+                    </button>
+                    {% endif %}
+
+                    {% if user.is_staff %}
+                    <a href="{% url 'products:edit_product' product.pk %}" class="btn btn-warning btn-lg">
+                        ✏️ تعديل
+                    </a>
+                    <a href="{% url 'products:delete_product' product.pk %}" class="btn btn-danger btn-lg">
+                        🗑️ حذف
+                    </a>
+                    {% endif %}
+
+                    <button class="btn btn-outline-primary btn-lg">
+                        ❤️ أضف للمفضلة
+                    </button>
+                </div>
+
+                <!-- Meta Info -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">رقم المنتج</small>
+                                <p class="mb-2">#{{ product.pk }}</p>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">التصنيف</small>
+                                <p class="mb-2">{{ product.category.name }}</p>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">تاريخ الإضافة</small>
+                                <p class="mb-0">{{ product.created_at|date:"Y/m/d" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="section-title mb-4">التقييمات والآراء ({{ product.reviews.count }})</h3>
+        </div>
+
+        <!-- Reviews List -->
+        <div class="col-lg-7">
+            {% if product.reviews.exists %}
+            <div class="reviews-list">
+                {% for review in product.reviews.all %}
+                <div class="card mb-3 review-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="card-title mb-0">{{ review.user.username }}</h6>
+                            <div class="text-end">
+                                <small class="text-muted d-block">{{ review.created_at|date:"Y/m/d" }}</small>
+                                {% if user == review.user or user.is_staff %}
+                                <a href="{% url 'products:delete_review' review.id %}"
+                                    class="text-danger small text-decoration-none"
+                                    onclick="return confirm('هل أنت متأكد من حذف هذا التقييم؟')">حذف</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="rating-stars mb-2" style="color: #ffc107;">
+                            {% with ''|center:review.rating as range %}
+                            {% for _ in range %}⭐{% endfor %}
+                            {% endwith %}
+                        </div>
+                        <p class="card-text">{{ review.comment }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted">لا توجد تقييمات بعد. كن أول من يقيّم هذا المنتج!</p>
+            {% endif %}
+        </div>
+
+        <!-- Add Review Form -->
+        <div class="col-lg-5">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">أضف تقييمك</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'products:add_review' product.pk %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">التقييم</label>
+                            <div class="rating-input d-flex flex-row-reverse justify-content-end gap-2">
+                                <input type="radio" name="rating" value="5" id="r5" class="d-none" required>
+                                <label for="r5" class="star-label">⭐</label>
+                                <input type="radio" name="rating" value="4" id="r4" class="d-none">
+                                <label for="r4" class="star-label">⭐</label>
+                                <input type="radio" name="rating" value="3" id="r3" class="d-none">
+                                <label for="r3" class="star-label">⭐</label>
+                                <input type="radio" name="rating" value="2" id="r2" class="d-none">
+                                <label for="r2" class="star-label">⭐</label>
+                                <input type="radio" name="rating" value="1" id="r1" class="d-none">
+                                <label for="r1" class="star-label">⭐</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="comment" class="form-label">تعليقك</label>
+                            <textarea name="comment" id="comment" rows="4" class="form-control" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">إرسال التقييم</button>
+                    </form>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p>يرجى تسجيل الدخول لإضافة تقييم</p>
+                        <a href="{% url 'users:login' %}?next={{ request.path }}" class="btn btn-outline-primary">تسجيل
+                            الدخول</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    {% if related_products %}
+    <section class="related-products mt-5">
+        <h3 class="section-title mb-4">منتجات ذات صلة</h3>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            {% for item in related_products %}
+            <div class="col">
+                <div class="card product-card h-100">
+                    <div class="product-img-sm">
+                        {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                        {% else %}
+                        <span class="placeholder-sm">📦</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h6 class="card-title">{{ item.name }}</h6>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="price-sm">{{ item.price }} ر.س</span>
+                            <a href="{% url 'core:product_detail' item.pk %}"
+                                class="btn btn-sm btn-outline-primary">التفاصيل</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+
+<style>
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+    }
+
+    .breadcrumb-item a {
+        color: var(--text-muted);
+        text-decoration: none;
+    }
+
+    .breadcrumb-item a:hover {
+        color: var(--primary-color);
+    }
+
+    .breadcrumb-item.active {
+        color: var(--text-light);
+    }
+
+    .breadcrumb-item+.breadcrumb-item::before {
+        color: var(--text-muted);
+    }
+
+    .product-gallery {
+        overflow: hidden;
+    }
+
+    .main-image {
+        height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .main-image img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .placeholder-image {
+        font-size: 6rem;
+        opacity: 0.4;
+    }
+
+    .category-badge {
+        display: inline-block;
+        color: var(--primary-color);
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-title {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .current-price {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--success-color);
+    }
+
+    .section-title {
+        color: var(--primary-color);
+        border-bottom: 2px solid var(--primary-color);
+        padding-bottom: 0.5rem;
+        display: inline-block;
+    }
+
+    .product-card {
+        transition: transform 0.3s;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .product-img-sm {
+        height: 140px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.05);
+        overflow: hidden;
+    }
+
+    .product-img-sm img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .placeholder-sm {
+        font-size: 2.5rem;
+        opacity: 0.4;
+    }
+
+    .price-sm {
+        font-weight: 700;
+        color: var(--success-color);
+    }
+
+    /* Rating Stars */
+    .star-label {
+        cursor: pointer;
+        font-size: 1.5rem;
+        color: #ccc;
+        transition: color 0.2s;
+    }
+
+    .rating-input input:checked~label,
+    .rating-input label:hover,
+    .rating-input label:hover~label {
+        color: #ffc107;
+    }
+</style>
+{% endblock %}

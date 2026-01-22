@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}طلباتي - المتجر الإلكتروني{% endblock %}
+
+{% block content %}
+<div class="orders-page">
+    <h1 class="page-title">📦 طلباتي</h1>
+
+    {% if orders %}
+    <div class="orders-list">
+        {% for order in orders %}
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-info">
+                    <span class="order-number">طلب #{{ order.pk }}</span>
+                    <span class="order-date">{{ order.created_at|date:"Y/m/d" }}</span>
+                </div>
+                <span class="order-status status-{{ order.status }}">{{ order.get_status_display }}</span>
+            </div>
+            <div class="order-body">
+                <div class="order-items-preview">
+                    {% for item in order.items.all|slice:":3" %}
+                    <div class="item-preview">
+                        {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                        {% else %}
+                        <span class="placeholder">📦</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    {% if order.items.count > 3 %}
+                    <div class="item-more">+{{ order.items.count|add:"-3" }}</div>
+                    {% endif %}
+                </div>
+                <div class="order-total">
+                    <span class="label">الإجمالي:</span>
+                    <span class="value">{{ order.total_price }} ر.س</span>
+                </div>
+                <a href="{% url 'orders:order_detail' order.pk %}" class="btn btn-sm">عرض التفاصيل</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h2>لا توجد طلبات</h2>
+        <p>لم تقم بإنشاء أي طلبات بعد</p>
+        <a href="{% url 'core:product_list' %}" class="btn btn-primary">تصفح المنتجات</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .orders-page {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+        color: #e94560;
+        margin-bottom: 2rem;
+    }
+
+    .orders-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .order-card {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 1.5rem;
+    }
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .order-number {
+        font-weight: 600;
+        color: #e94560;
+    }
+
+    .order-date {
+        color: rgba(255, 255, 255, 0.6);
+        margin-right: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .order-status {
+        padding: 0.35rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.85rem;
+    }
+
+    .status-pending {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+    }
+
+    .status-processing {
+        background: rgba(23, 162, 184, 0.2);
+        color: #17a2b8;
+    }
+
+    .status-shipped {
+        background: rgba(0, 123, 255, 0.2);
+        color: #007bff;
+    }
+
+    .status-delivered {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+
+    .status-cancelled {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+    }
+
+    .order-body {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .order-items-preview {
+        display: flex;
+        gap: 0.5rem;
+        flex: 1;
+    }
+
+    .item-preview {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .item-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .placeholder {
+        font-size: 1.5rem;
+        opacity: 0.5;
+    }
+
+    .item-more {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        background: rgba(233, 69, 96, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #e94560;
+        font-weight: 600;
+    }
+
+    .order-total {
+        text-align: left;
+    }
+
+    .order-total .label {
+        display: block;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .order-total .value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #51cf66;
+    }
+
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        font-size: 5rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state h2 {
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}

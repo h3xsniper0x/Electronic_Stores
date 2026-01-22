@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}الملف الشخصي - المتجر الإلكتروني{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">الملف الشخصي</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="avatar-circle-lg mx-auto mb-3">
+                            <span class="fs-1">{{ user.username|make_list|first|upper }}</span>
+                        </div>
+                        <h3>{{ user.username }}</h3>
+                        <p class="text-muted">{{ user.email }}</p>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">طلباتي</h5>
+                                    <p class="card-text fs-4">{{ user.orders.count }}</p>
+                                    <a href="{% url 'orders:order_list' %}"
+                                        class="btn btn-outline-primary stretched-link">عرض الطلبات</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">سلة التسوق</h5>
+                                    <p class="card-text fs-4">{{ user.cart.items.count }}</p>
+                                    <a href="{% url 'orders:cart' %}" class="btn btn-outline-primary stretched-link">عرض
+                                        السلة</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle-lg {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(45deg, var(--primary-color), #ff6b6b);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+</style>
+{% endblock %}

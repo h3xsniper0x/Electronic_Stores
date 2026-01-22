@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}تسجيل الدخول - المتجر الإلكتروني{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h2 class="auth-title">تسجيل الدخول</h2>
+
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+
+            {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <div class="field-errors">
+                    {% for error in field.errors %}
+                    <span class="error-text">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary btn-block">تسجيل الدخول</button>
+        </form>
+
+        <div class="auth-footer">
+            <p>ليس لديك حساب؟ <a href="{% url 'users:register' %}">إنشاء حساب جديد</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

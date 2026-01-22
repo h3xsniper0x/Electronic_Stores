@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}إتمام الشراء - المتجر الإلكتروني{% endblock %}
+
+{% block content %}
+<div class="checkout-page">
+    <h1 class="page-title mb-4">📋 إتمام الشراء</h1>
+
+    <div class="row g-4">
+        <!-- Checkout Form -->
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">معلومات التوصيل</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in field.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            🛍️ تأكيد الطلب
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-5">
+            <div class="card order-summary sticky-top" style="top: 100px;">
+                <div class="card-header">
+                    <h5 class="mb-0">ملخص الطلب</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Items -->
+                    <div class="summary-items mb-3">
+                        {% for item in cart.items.all %}
+                        <div class="summary-item d-flex justify-content-between py-2 border-bottom">
+                            <div>
+                                <span class="item-name">{{ item.product.name }}</span>
+                                <small class="text-muted d-block">× {{ item.quantity }}</small>
+                            </div>
+                            <span class="item-price text-success">{{ item.total_price }} ر.س</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Totals -->
+                    <div class="summary-totals">
+                        <div class="d-flex justify-content-between py-2">
+                            <span>المجموع الفرعي:</span>
+                            <span>{{ cart.total_price }} ر.س</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2">
+                            <span>الشحن:</span>
+                            <span class="text-success">مجاني</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between py-2 fs-5 fw-bold">
+                            <span>الإجمالي:</span>
+                            <span class="text-success">{{ cart.total_price }} ر.س</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{% url 'orders:cart' %}" class="text-muted">← العودة إلى السلة</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-title {
+        color: var(--primary-color);
+    }
+
+    .form-label {
+        font-weight: 600;
+    }
+
+    .summary-items {
+        max-height: 250px;
+        overflow-y: auto;
+    }
+
+    .item-name {
+        font-weight: 500;
+    }
+</style>
+{% endblock %}

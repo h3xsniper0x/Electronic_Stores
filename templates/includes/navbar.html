@@ -1,0 +1,131 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container-fluid">
+        <!-- Sidebar Toggle (Mobile) -->
+        <button class="btn btn-link text-white p-0 me-3 d-lg-none sidebar-toggle">
+            <span class="fs-4">☰</span>
+        </button>
+
+        <!-- Logo -->
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'core:home' %}">
+            <span class="logo-icon">⚡</span>
+            <span class="fw-bold">المتجر الإلكتروني</span>
+        </a>
+
+        <!-- Search Bar (Desktop) -->
+        <div class="d-none d-md-block mx-auto w-50">
+            <form action="{% url 'core:product_list' %}" method="get" class="search-form">
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0">
+                        <span class="text-muted">🔍</span>
+                    </span>
+                    <input type="text" name="search" class="form-control border-start-0 ps-0"
+                        placeholder="ابحث عن منتج..." value="{{ request.GET.search }}">
+                </div>
+            </form>
+        </div>
+
+        <!-- Right Menu -->
+        <div class="d-flex align-items-center gap-3">
+            <!-- Search Toggle (Mobile) -->
+            <button class="btn btn-link text-white d-md-none p-0">
+                <span>🔍</span>
+            </button>
+
+            <!-- Cart -->
+            <a href="{% url 'orders:cart' %}" class="position-relative btn btn-link text-white p-0">
+                <span class="fs-5">🛒</span>
+                {% if request.user.is_authenticated and request.user.cart.items.count > 0 %}
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                    style="font-size: 0.6rem;">
+                    {{ request.user.cart.items.count }}
+                </span>
+                {% endif %}
+            </a>
+
+            <!-- User Menu -->
+            <div class="dropdown">
+                <button
+                    class="btn btn-link text-white p-0 d-flex align-items-center gap-2 text-decoration-none dropdown-toggle"
+                    type="button" data-bs-toggle="dropdown">
+                    <div class="avatar-circle">
+                        {% if request.user.is_authenticated %}
+                        {{ request.user.username|make_list|first|upper }}
+                        {% else %}
+                        👤
+                        {% endif %}
+                    </div>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    {% if request.user.is_authenticated %}
+                    <li>
+                        <h6 class="dropdown-header">مرحباً، {{ request.user.username }}</h6>
+                    </li>
+                    <li><a class="dropdown-item" href="{% url 'users:profile' %}">الملف الشخصي</a></li>
+                    <li><a class="dropdown-item" href="{% url 'orders:order_list' %}">طلباتي</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li>
+                        <form action="{% url 'users:logout' %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item text-danger">تسجيل خروج</button>
+                        </form>
+                    </li>
+                    {% else %}
+                    <li><a class="dropdown-item" href="{% url 'users:login' %}">تسجيل دخول</a></li>
+                    <li><a class="dropdown-item" href="{% url 'users:register' %}">إنشاء حساب</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .navbar {
+        background: rgba(22, 33, 62, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        height: 70px;
+        z-index: 1000;
+    }
+
+    .logo-icon {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+    }
+
+    .search-form .input-group {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        transition: all 0.3s;
+    }
+
+    .search-form .input-group:focus-within {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 15px rgba(233, 69, 96, 0.2);
+    }
+
+    .search-form input {
+        background: transparent !important;
+        border: none;
+        color: #fff !important;
+        box-shadow: none !important;
+    }
+
+    .avatar-circle {
+        width: 35px;
+        height: 35px;
+        background: linear-gradient(45deg, var(--primary-color), #ff6b6b);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+    }
+</style>

@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+
+{% block title %}سلة التسوق - المتجر الإلكتروني{% endblock %}
+
+{% block content %}
+<div class="cart-page">
+    <h1 class="page-title">🛒 سلة التسوق</h1>
+<h2>اعداد الطالب  وائل غالب احمد هيسان</h2>
+    {% if messages %}
+    <اعداد الطالب  وائل غالب احمد هيسانdiv class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if cart.items.exists %}
+    <div class="cart-container">
+        <div class="cart-items">
+            {% for item in cart.items.all %}
+            <div class="cart-item">
+                <div class="item-image">
+                    {% if item.product.image %}
+                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                    {% else %}
+                    <div class="placeholder-image">📦</div>
+                    {% endif %}
+                </div>
+
+                <div class="item-details">
+                    <h3>{{ item.product.name }}</h3>
+                    <span class="item-category">{{ item.product.category.name }}</span>
+                    <span class="item-price">{{ item.product.price }} ر.س</span>
+                </div>
+
+                <div class="item-quantity">
+                    <form method="post" action="{% url 'orders:update_cart_item' item.pk %}" class="quantity-form">
+                        {% csrf_token %}
+                        <button type="button" class="qty-btn minus" onclick="updateQty(this, -1)">−</button>
+                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="qty-input">
+                        <button type="button" class="qty-btn plus" onclick="updateQty(this, 1)">+</button>
+                        <button type="submit" class="update-btn">تحديث</button>
+                    </form>
+                </div>
+
+                <div class="item-total">
+                    <span class="total-label">الإجمالي:</span>
+                    <span class="total-value">{{ item.total_price }} ر.س</span>
+                </div>
+
+                <form method="post" action="{% url 'orders:remove_from_cart' item.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="remove-btn" title="حذف">✕</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="cart-summary">
+            <h2>ملخص الطلب</h2>
+            <div class="summary-row">
+                <span>عدد المنتجات:</span>
+                <span>{{ cart.total_items }}</span>
+            </div>
+            <div class="summary-row total">
+                <span>الإجمالي:</span>
+                <span>{{ cart.total_price }} ر.س</span>
+            </div>
+            <a href="{% url 'orders:checkout' %}" class="btn btn-primary btn-block">إتمام الشراء</a>
+            <a href="{% url 'core:product_list' %}" class="btn btn-outline btn-block">متابعة التسوق</a>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-cart">
+        <div class="empty-icon">🛒</div>
+        <h2>سلة التسوق فارغة</h2>
+        <p>لم تقم بإضافة أي منتجات إلى السلة بعد</p>
+        <a href="{% url 'core:product_list' %}" class="btn btn-primary">تصفح المنتجات</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .cart-page {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+        color: #e94560;
+        margin-bottom: 2rem;
+    }
+
+    .cart-container {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 2rem;
+    }
+
+    .cart-items {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .cart-item {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 1.5rem;
+        display: grid;
+        grid-template-columns: 80px 1fr auto auto auto;
+        gap: 1.5rem;
+        align-items: center;
+    }
+
+    .item-image {
+        width: 80px;
+        height: 80px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .placeholder-image {
+        font-size: 2rem;
+        opacity: 0.5;
+    }
+
+    .item-details h3 {
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .item-category {
+        display: block;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .item-price {
+        display: block;
+        color: #51cf66;
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+
+    .quantity-form {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .qty-btn {
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        cursor: pointer;
+        font-size: 1.2rem;
+    }
+
+    .qty-btn:hover {
+        background: #e94560;
+    }
+
+    .qty-input {
+        width: 50px;
+        text-align: center;
+        padding: 0.5rem;
+        border: none;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        font-family: inherit;
+    }
+
+    .update-btn {
+        padding: 0.5rem 0.75rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        border-radius: 8px;
+        color: #fff;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 0.8rem;
+    }
+
+    .update-btn:hover {
+        background: #e94560;
+    }
+
+    .item-total {
+        text-align: left;
+    }
+
+    .total-label {
+        display: block;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .total-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #51cf66;
+    }
+
+    .remove-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 8px;
+        background: rgba(220, 53, 69, 0.2);
+        color: #ff6b6b;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+
+    .remove-btn:hover {
+        background: #dc3545;
+        color: #fff;
+    }
+
+    .cart-summary {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 1.5rem;
+        height: fit-content;
+        position: sticky;
+        top: 2rem;
+    }
+
+    .cart-summary h2 {
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+        color: #e94560;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .summary-row.total {
+        font-size: 1.2rem;
+        font-weight: 700;
+        border-bottom: none;
+        color: #51cf66;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-block {
+        width: 100%;
+        text-align: center;
+        margin-top: 0.75rem;
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: #fff;
+    }
+
+    .btn-outline:hover {
+        border-color: #e94560;
+        color: #e94560;
+    }
+
+    .empty-cart {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        font-size: 5rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-cart h2 {
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-cart p {
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .cart-container {
+            grid-template-columns: 1fr;
+        }
+
+        .cart-item {
+            grid-template-columns: 60px 1fr;
+            gap: 1rem;
+        }
+
+        .item-quantity,
+        .item-total {
+            grid-column: span 2;
+        }
+    }
+</style>
+
+<script>
+    function updateQty(btn, delta) {
+        const input = btn.parentElement.querySelector('.qty-input');
+        let val = parseInt(input.value) + delta;
+        if (val < 1) val = 1;
+        input.value = val;
+    }
+</script>
+{% endblock %}
