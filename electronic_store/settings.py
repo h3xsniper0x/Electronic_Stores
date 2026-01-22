@@ -29,8 +29,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-#(uxjfp#hs!epu4dk12)x
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*', cast=lambda v: [s.strip() for s in v.split(',')])
-
+ALLOWED_HOSTS = ['electronic-stores-1.onrender.com', 'localhost', '127.0.0.1']
 # Render CSRF protection
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
